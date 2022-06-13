@@ -12,8 +12,8 @@ if __name__ == "__main__":
     # Arguments users used when running command lines
     parser.add_argument("--epochs", default=10, type=int)
     parser.add_argument("--checkpoint-folder", default='{}/checkpoints/'.format(home_dir), type=str)
+    parser.add_argument("--data-path", default='{}/data/IMDB_Dataset.csv'.format(home_dir), type=str)
     args = parser.parse_args()
-    data_path = './data/IMDB_Dataset.csv'
 
     # FIXME
     # Project Description
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     print('---------------------------------------------------------------------')
     print('Training ${name} model with hyper-params:') # FIXME
     print('===========================')
-    n_layers = 6 # number of Encoder of Encoder Layer
+    n_layers = 3 # number of Encoder of Encoder Layer
     n_heads = 12 # number of heads in Multi-Head Attention
     d_model = 768 # Embedding Size
     d_ff = 768 * 4  # 4*d_model, FeedForward dimension
@@ -32,13 +32,14 @@ if __name__ == "__main__":
     n_segments = 2
     dropout_rate = 0.1
     eps = 0.1
-    epochs = args.epochs
-    batch_size = 6
-    maxlen = 30
+    epochs = 5
+    batch_size = 30
+    maxlen = 400
     max_pred = 5
     checkpoint_folder = args.checkpoint_folder
+    data_path = args.data_path
     # FIXME
-    dataset = Dataset(batch_size, maxlen, max_pred)
+    dataset = Dataset(batch_size, maxlen, max_pred, data_path)
     train_dataset = dataset.build_dataset()
     vocab_size = dataset.vocab_size + 1
     bert = Bert(n_layers,n_heads,vocab_size,maxlen,n_segments,d_model,d_ff,dropout_rate,eps)

@@ -1,4 +1,3 @@
-from bert.layers.generate_mask import generate_padding_mask
 import tensorflow as tf
 
 class Trainer:
@@ -21,30 +20,43 @@ class Trainer:
 
 	def train_step(self, input_ids, segment_ids, masked_tokens, masked_pos, are_next):
 		"""
-            Parameters
-            ----------
+			Parameters
+			----------
+			input_ids: tensor,
+					shape: (batch_size, max_length)
+			segment_ids: tensor,
+					shape: (batch_size, max_length)
+			masked_tokens: tensor,
+					shape: (batch_size, max_pred)
+			masked_pos: tensor,
+					shape: (batch_size, max_pred)
 			are_next: tensor,
-                shape: (batch_size)
-            masked_tokens: tensor,
-                shape: (batch_size, max_pred)
-            
-        """
+					shape: (batch_size,)
+			Returns
+			----------
+			loss: number
+					
+			
+		"""
+ 
 		# TODO: Update document
-		are_next_expand = tf.expand_dims(are_next, axis = 1 )
+		are_next_expand = tf.expand_dims(are_next, axis = 1 )#(batch_size, 1)
 		
 		with tf.GradientTape() as tape:
-			#logits_mlm = (batch_size, max_pred, vocab_size), logits_nsp = (batch_size, 2)
+			#logits_mlm = (batch_size, max_pred, max_length), logits_nsp = (batch_size, 2)
 			logits_mlm, logits_nsp = self.model(input_ids, segment_ids,True, masked_pos) 
 			batch_size, max_pred, vocab_size =  logits_mlm.shape
-			masked_tokens_one_hot = tf.one_hot(masked_tokens, vocab_size, axis=-1)
-			# logits_mlm_tranpose = tf.transpose(logits_mlm, [0,2, 1]) #(batch_size, max_pred, vocab_size)
+			masked_tokens_one_hot = tf.one_hot(masked_tokens, vocab_size, axis=-1)#(batch_size, max_pred, max_length)
+			
 			mask_loss = self.loss_function(masked_tokens_one_hot, logits_mlm, "CategoricalCrossentropy")
+			
 			seg_loss = self.loss_function(are_next_expand, logits_nsp, "BinaryCrossentropy")
+			
 			d_loss = mask_loss + seg_loss
 
 		# Compute gradients
 		grads = tape.gradient(d_loss, self.model.trainable_variables)
-
+		
 		# Update weights
 		self.optimizer.apply_gradients(zip(grads, self.model.trainable_variables))
 
@@ -72,7 +84,7 @@ class Trainer:
 				print('Checkpoint was saved at {}'.format(saved_path))
 		print('----------------Done--------------------')
 
-	def predict(self, train_dataset, text, number_dict):
+	def predict(self, train_dataset, number_dict):
 		print('=============Inference Progress================')
 		print('----------------Begin--------------------')
 		# Loading checkpoint
@@ -80,16 +92,19 @@ class Trainer:
 		if self.checkpoint_manager.latest_checkpoint:
 			self.checkpoint.restore(self.checkpoint_manager.latest_checkpoint).expect_partial()
 			print('Restored checkpoint manager !')
-		#masked_tokens = (1, max_pred), are_next = (1), input_ids = (1, vocab_size), segment_ids = (1, max_length), masked_pos = (1, max_pred)
+		#masked_tokens = (1, max_pred), are_next = (1), input_ids = (1, max_length), segment_ids = (1, max_length), masked_pos = (1, max_pred)
 		input_ids, segment_ids, masked_tokens, masked_positions, are_next = train_dataset
-		print(text)
 		print([[number_dict[w.numpy()]] for w in input_ids[0] if number_dict[w.numpy()] != '[PAD]'])
-		#logits_mlm = (1, max_pred, vocab_size), logits_nsp = (1, 2)
+		#logits_mlm = (1, max_pred, max_length), logits_nsp = (1, 2)
 		logits_mlm, logits_nsp = self.model(input_ids, segment_ids, False, masked_positions)
+
 		print('masked tokens list : ',[pos.numpy() for pos in masked_tokens[0] if pos.numpy() != 0])
-		logits_lm_max = tf.reduce_max(logits_mlm[0], axis =1)
+		
+		logits_lm_max = tf.reduce_max(logits_mlm[0], axis =1)#(5,)
+		
 		print('predict masked tokens list : ',[pos.numpy() for pos in logits_lm_max if pos != 0])
 
 		logits_nsp_max = tf.reduce_max(logits_nsp, axis =1)
 		print('isNext : ', True if are_next else False)
 		print('predict isNext : ', True if logits_nsp_max  else False )
+
