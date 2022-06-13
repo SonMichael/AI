@@ -7,13 +7,13 @@
 <p dir="auto">Bert Architecture :</p>
 <p align="center" dir="auto">
     <a target="_blank" rel="noopener noreferrer" href="/images/bert_model.jpeg">
-        <img src="/images/bert_model.jpeg" width="400" style="max-width: 100%;">
+        <img src="./images/bert_model.jpeg" width="400" style="max-width: 100%;">
     </a>
 </p>
 <p dir="auto">Input embeddings :</p>
 <p align="center" dir="auto">
     <a target="_blank" rel="noopener noreferrer" href="/images/input_embedding.png">
-        <img src="/images/input_embedding.png" width="400" style="max-width: 100%;">
+        <img src="./images/input_embedding.png" width="400" style="max-width: 100%;">
     </a>
 </p>
 
