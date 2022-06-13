@@ -1,0 +1,4 @@
+__pycache__
+*.pickle
+checkpoints/
+.DS_Store
