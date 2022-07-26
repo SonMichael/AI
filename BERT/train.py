@@ -24,7 +24,7 @@ if __name__ == "__main__":
     print('---------------------------------------------------------------------')
     print('Training ${name} model with hyper-params:') # FIXME
     print('===========================')
-    n_layers = 3 # number of Encoder of Encoder Layer
+    n_layers = 1 # number of Encoder of Encoder Layer
     n_heads = 12 # number of heads in Multi-Head Attention
     d_model = 768 # Embedding Size
     d_ff = 768 * 4  # 4*d_model, FeedForward dimension
